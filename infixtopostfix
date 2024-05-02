@@ -1,0 +1,67 @@
+lexfile (itop.l)
+///////////////
+%{
+#include"itop.tab.h"
+//extern int yylval;
+%}
+%%
+[0-9]+  {yylval=atoi(yytext); return NUMBER;}
+.|\n       return *yytext;
+%%
+
+int yywrap(){
+    return 1;
+}
+
+yacc file(itop.y)
+/////////////////
+%{
+ #define YYSTYPE double
+ #include "lex.yy.c"
+ #include <stdio.h>
+ #include<ctype.h>
+ 
+ void yyerror(char *);
+ 
+%}
+
+%token NUMBER
+%left '+'  '-'
+%left '*'  '/'
+%right UMINUS
+%right '^'
+
+%%
+lines: E '\n' { printf("\n");}
+	|
+	;
+E :E'+'E { printf(" + ");}
+  |E'-'E { printf(" - ");}
+  |E'*'E { printf(" * ");}
+  |E'/'E { printf(" / ");}
+  |'('E')' 
+  |NUMBER { printf("%g ",yylval);}
+  ;
+
+
+
+%%
+
+void yyerror(char *s) {
+ fprintf(stderr, "%s\n", s);
+}
+
+
+
+int main(void) {
+ printf("\nEnter the infix : ");
+ yyparse();
+ return 0;
+} 
+
+How to run 
+$ bison -d intop.y
+$ flex intop.l
+$ gcc itop.tab.c -o itop
+$ ./itop
+
